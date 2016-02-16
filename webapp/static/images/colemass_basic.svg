@@ -8,8 +8,8 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="215"
-   height="40"
+   width="1075"
+   height="200"
    viewBox="-100 -100 1075 200"
    id="svg2"
    version="1.1"
@@ -55,9 +55,9 @@
      width="1075"
      height="200"
      id="background"
-     style="fill:#F8F8F8" />
+     style="fill:#ffffff" />
   <g
-     style="fill:none;stroke:#000080;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4"
+     style="fill:none;stroke:#000000;stroke-width:30;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4"
      id="letters">
     <path
        id="c"

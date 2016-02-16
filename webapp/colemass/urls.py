@@ -16,22 +16,28 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.template import RequestContext
-from django.contrib.auth.views import login, logout
+from django.contrib.auth import views as auth_views
 
 from chores.views import mycolemass, stats
+
+authentication_urls = [
+    url(r'^login/$', auth_views.login, name='login'),
+    url(r'^logout/$', auth_views.logout_then_login, name='logout'),
+    url(r'^password_reset/$', auth_views.password_reset, {'post_reset_redirect': 'login'}, name='password_reset'),
+    url(r'^reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$', auth_views.password_reset_confirm, {'post_reset_redirect': 'login'}, name='password_reset_confirm'),
+]
 
 urlpatterns = [
     url(r'^$', mycolemass, name="mycolemass"),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^accounts/login/$', login, {'template_name': 'users/login.html'}, name="login"),
-    url(r'^accounts/logout/$', logout, {'next_page': '/'}, name="logout"),
     url(r'^dishes/', include('dishes.urls', namespace="dishes")),
     url(r'^appliances/', include('appliances.urls', namespace="appliances")),
     url(r'^stats/', stats, name="stats"),
     url(r'^chores/', include('chores.urls', namespace="chores")),
-    url(r'^', include('users.urls', namespace="users")),
+    url(r'^user/', include('users.urls', namespace="users")),
     url(r'^hw/', include('hardware.urls', namespace="hardware")),
-]
+] + authentication_urls
+
 def handler404(request):
     response = render_to_response('error404.html', {},
                                   context_instance=RequestContext(request))

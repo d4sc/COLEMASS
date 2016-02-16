@@ -33,7 +33,7 @@ class Chore(models.Model):
     active = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['nudges', '-assigned_time']
+        ordering = ['-nudges', '-assigned_time']
 
     def __str__(self):
         return self.name

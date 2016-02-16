@@ -1,128 +1,129 @@
 {% extends 'base.html' %}
+{% block title %} My Colemass {% endblock %}
+{% block h1 %} My Colemass {% endblock %}
 {% block content %}
-<script language="javascript">
-function toggle(chore) {
-	var ele = document.getElementById(chore);
-	var text = document.getElementById("displayText"+chore);
-	if(ele.style.display == "block") {
-    		ele.style.display = "none";
-		text.innerHTML = "Refuse";
-  	}
-	else {
-		ele.style.display = "block";
-		text.innerHTML = "Cancel";
-	}
-}
-</script>
-    <h3 class="menupointtitle"> My COLEMASS </h3>
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif%}
-    <div class="subpointlist">
-        <h3 class="subpoint"> My Chores </h3>
-        <table class="tab">
-        <!--
-            {% if dish_chore.active %}
-                <tr>
-                    <td>Your dish chore</td>
-                    <td>Dishes out: {{ request.user.dish_set.count }}</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            {% endif %}
-        -->
-	    {% for chore in chores %}
-            <tr>
-                <td>{{ chore.name }}</td>
-                <td> was assigned {{ chore.assigned_time|timesince }} ago</td>
-                <td>
-                    <form action="{% url 'chores:done' %}" method="post" >
-                        {% csrf_token %}
-                        <input type="hidden" name="pk" value="{{ chore.pk }}">
-                        <input type="submit" value="Done">
-                    </form>
-                </td>
-                <td>
-                    <a id="displayText{{chore.pk}}" class="button" href="javascript:toggle({{chore.pk}});">Refuse</a>
-                    <div id="{{chore.pk}}" style="display: none;">
-                        <form action="{% url 'chores:refuse' %}" method="post" >
-                            {% csrf_token %}
-                            <textarea name="reason" rows="3" cols="20" maxlength="140" placeholder="Enter reason for refusal."></textarea><br><br>
-                            <input type="hidden" name="pk" value="{{ chore.pk }}">
-                            <input type="submit" value="Refuse">
-                        </form>
-                    </div>
-                </td>
-            </tr>
-        {% endfor %}
-        </table>
+<!-- Modal for chore refusal -->
+<div class="modal fade" id="refusing" tabindex="-1" role="dialog" aria-labelledby="refusingLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
+        </button>
+        <h4 class="modal-title" id="refusingLabel">Refusing</h4>
+      </div>
+      <form action="{% url 'chores:refuse' %}" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="reason">Reason for refusal</label>
+            <input type="text" class="form-control" name="reason" placeholder="Reason" required>
+            <input type="hidden" name="pk" value="0">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Refuse</button>
+        </div>
+      </form>
     </div>
-    <div class="subpointlist">
-        <h3 class="subpoint"> Completed Chores </h3>
-        <table class="tab">
-            {% for completed_chore in completed_chores %}
-                <tr>
-                    <td>{{ completed_chore.chore.name }}</td>
-                    <td>completed by {{ completed_chore.user }}</td>
-                    <td>on {{ completed_chore.date|date:"D d M" }} at {{ completed_chore.date|time:"H:i" }}</td>
-                    <td>
-                        <form action="{% url 'chores:approve completion' %}" method="post" >
-                            {% csrf_token %}
-                            <input type="hidden" name="pk" value="{{ completed_chore.pk }}">
-                            <input type="submit" value="Confirm" {% if completed_chore.user == request.user %}disabled{% endif %}>
-                        </form>
-                    </td>
-                    <td>
-                        <form action="{% url 'chores:challenge completion' %}" method="post" >
-                            {% csrf_token %}
-                            <input type="hidden" name="pk" value="{{ completed_chore.pk }}">
-                            <input type="submit" value="Reject" {% if completed_chore.user == request.user %}disabled{% endif %}>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
+  </div>
+</div>
 
-    <div class="subpointlist">
-        <h3 class="subpoint"> Refused Chores </h3>
-        <table class="tab">
-            {% for refused_chore in refused_chores %}
-                <tr>
-                    <td>{{ refused_chore.chore.name }}</td>
-                    <td>refused by {{ refused_chore.user }}</td>
-                    <td>Reason: {{refused_chore.reason }}</td>
-                    <td>
-                        <form action="{% url 'chores:approve refusal' %}" method="post" >
-                            {% csrf_token %}
-                            <input type="hidden" name="pk" value="{{ refused_chore.pk }}">
-                            <input type="submit" value="Confirm">
-                        </form>
-                    </td>
-                    <td>
-                        <form action="{% url 'chores:challenge refusal' %}" method="post" >
-                            {% csrf_token %}
-                            <input type="hidden" name="pk" value="{{ refused_chore.pk }}">
-                            <input type="submit" value="Reject"
-                                {% if not refused_chore.user.is_active or refused_chore.user.userdetail.is_absent %}
-                                    disabled
-                                {% endif %}>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
+<!-- Main content -->
+<div class="row main">
+  {% if absent_users %}
+    <div class="alert alert-info" role="alert">
+      <strong>Absent user{{ absent_users|pluralize }}:</strong>
+      {% for user in absent_users %}
+        {{ user }}{% if forloop.last %}. {% else %}, {% endif %}
+      {% endfor %}
     </div>
-    <div class="subpointlist">
-        <h3 class="subpoint"> Currently Away </h3>
-        <ul>
-        {% for user in absent_users %}
-            <li>{{ user.username }}</li>
-        {% endfor %}
-        </ul>
+  {% endif %}
+  <h2 class="sub-header">My Chores</h2>
+  {% for chore in chores %}
+    <div class="row div-hover">
+      <div class="col-md-4 col-xs-12"><strong>{{ chore.name }}</strong></div>
+      <div class="col-md-3 col-sm-6 col-xs-12">assigned {{ chore.assigned_time|timesince }} ago</div>
+      <div class="col-md-3 col-sm-4 col-xs-6">{{ chore.nudges }} nudge{{ chore.nudges|pluralize }}</div>
+      <div class="col-md-1 col-sm-1 col-xs-3 text-right">
+        <form action="{% url 'chores:done' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="pk" value="{{ chore.pk }}">
+          <button type="submit" class="btn btn-success btn-xs">Done</input>
+        </form>
+      </div>
+      <div class="col-md-1 col-sm-1 col-xs-3 text-right">
+        <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#refusing"
+          data-chorepk="{{ chore.pk }}" data-chorename="{{ chore.name }}">
+          Refuse
+        </button>
+      </div>
     </div>
+  {% empty %}
+    <div class="row">
+      <div class="col-md-12"><em>You don't have any chores at the moment.</em></div>
+    </div>
+  {% endfor %}
+  
+  <h2 class="sub-header">Completed chores</h2>
+  {% for completed_chore in completed_chores %}
+    <div class="row div-hover">
+      <div class="col-md-4 col-xs-12"><strong>{{ completed_chore.chore.name }}</strong></div>
+      <div class="col-md-3 col-sm-6 col-xs-12">completed by {{ completed_chore.user }}</div>
+      <div class="col-md-3 col-sm-4 col-xs-6">{{ completed_chore.date|date:"D d M" }} at {{ completed_chore.date|time:"H:i" }}</div>
+      <div class="col-md-1 col-sm-1 col-xs-3 text-right">
+        <form action="{% url 'chores:approve completion' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="pk" value="{{ completed_chore.pk }}">
+          <button type="submit" class="btn btn-success btn-xs" {% if completed_chore.user == request.user %}disabled{% endif %}>Confirm</input>
+        </form>
+      </div>
+      <div class="col-md-1 col-sm-1 col-xs-3 text-right">
+        <form action="{% url 'chores:challenge completion' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="pk" value="{{ completed_chore.pk }}">
+          <button type="submit" class="btn btn-danger btn-xs"
+            {% if refused_chore.user == request.user or not refused_chore.user.is_active or refused_chore.user.userdetail.is_absent %}
+              disabled
+            {% endif %}>Reject</input>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="row">
+      <div class="col-md-12"><em>No completed chores at the moment.</em></div>
+    </div>
+  {% endfor %}
+
+  <h2 class="sub-header">Refused chores</h2>
+  {% for refused_chore in refused_chores %}
+    <div class="row div-hover">
+      <div class="col-md-4 col-xs-12"><strong>{{ refused_chore.chore.name }}</strong></div>
+      <div class="col-md-3 col-sm-6 col-xs-12">refused by {{ refused_chore.user }}</div>
+      <div class="col-md-3 col-sm-4 col-xs-12">Reason: {{ refused_chore.reason }}</div>
+      <div class="col-md-1 col-sm-1 col-xs-9 text-right">
+        <form action="{% url 'chores:approve refusal' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="pk" value="{{ refused_chore.pk }}">
+          <button type="submit" class="btn btn-success btn-xs" {% if refused_chore.user == request.user %}disabled{% endif %}>Confirm</input>
+        </form>
+      </div>
+      <div class="col-md-1 col-sm-1 col-xs-3 text-right">
+        <form action="{% url 'chores:challenge refusal' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="pk" value="{{ refused_chore.pk }}">
+          <button type="submit" class="btn btn-danger btn-xs"
+            {% if refused_chore.user == request.user or not refused_chore.user.is_active or refused_chore.user.userdetail.is_absent %}
+              disabled
+            {% endif %}>Reject</input>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="row">
+      <div class="col-md-12"><em>No refused chores at the moment.</em></div>
+    </div>
+  {% endfor %}
+</div>
 {% endblock %}

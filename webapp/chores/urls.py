@@ -13,8 +13,8 @@ urlpatterns = [
     url(r'^refusal/approve/$', views.refusal_approve, name="approve refusal"),
     url(r'^refusal/challenge/$', views.refusal_challenge, name="challenge refusal"),
     url(r'^settings/$', login_required(views.RecurringChoreListView.as_view()), name="settings"),
-    url(r'^edit/(?P<pk>[0-9]+)/$', login_required(views.RecurringChoreUpdate.as_view()), name="edit"),
-    url(r'^new/$', login_required(views.RecurringChoreCreate.as_view()), name="new"),
-    url(r'^delete/(?P<pk>[0-9]+)/$', login_required(views.RecurringChoreDelete.as_view()), name="delete"),
-    url(r'^update/$', views.update_active_chores, name="update"),
+    url(r'^edit/$', views.edit, name="edit"),
+    url(r'^new/$', views.new, name="new"),
+    url(r'^delete/$', views.delete, name="delete"),
+    
 ]

@@ -9,6 +9,8 @@ from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.utils.decorators import method_decorator
 from django.db.models import Count
 from django.contrib import messages
+
+from .forms import RecurringChoreForm
 from .models import *
 from dishes.models import *
 from appliances.models import *
@@ -35,7 +37,7 @@ def get_chore_with_model(pk):
 def mycolemass(request):
     ''' Colemass home page view '''
     user = request.user
-    chores = Chore.objects.filter(assignee=user)
+    chores = Chore.objects.filter(assignee=user, active=True)
     completed_chores = CompletedChore.objects.filter(confirmed=False)
     refused_chores = RefusedChore.objects.filter(confirmed=False)
     absent_users = User.objects.filter(userdetail__is_absent=True)
@@ -67,7 +69,7 @@ def stats(request):
 def done(request):
     chore = get_chore_with_model(pk=request.POST.get('pk'))
     chore.complete(user=request.user)
-    messages.info(request, "You've completed \"{0}\"".format(chore.name))
+    messages.success(request, "You've completed \"{0}\"".format(chore.name))
     return redirect('mycolemass')
 
 @login_required
@@ -88,21 +90,21 @@ def nudge(request):
 def completed_chore_approve(request):
     completed_chore = get_object_or_404(CompletedChore, pk=request.POST.get('pk'))
     completed_chore.confirm()
-    messages.info(request, "You confirmed that {0} completed \"{1}\"".format(completed_chore.user.username, completed_chore.chore.name))
+    messages.success(request, "You confirmed that {0} completed \"{1}\"".format(completed_chore.user.username, completed_chore.chore.name))
     return redirect('mycolemass')
 
 @login_required
 def completed_chore_challenge(request):
     completed_chore = get_object_or_404(CompletedChore, pk=request.POST.get('pk'))
     completed_chore.challenge()
-    messages.info(request, "You rejected {0}'s completion of \"{1}\"".format(completed_chore.user.username, completed_chore.chore.name))
+    messages.error(request, "You rejected {0}'s completion of \"{1}\"".format(completed_chore.user.username, completed_chore.chore.name))
     return redirect('mycolemass')
 
 @login_required
 def refusal_approve(request):
     refused_chore = get_object_or_404(RefusedChore, pk=request.POST.get('pk'))
     refused_chore.confirm()
-    messages.info(request, "You confirmed that {0} has a valid reason" \
+    messages.success(request, "You confirmed that {0} has a valid reason" \
         " not to complete\"{1}\"".format(refused_chore.user.username, refused_chore.chore.name))
     return redirect('mycolemass')
 
@@ -110,79 +112,98 @@ def refusal_approve(request):
 def refusal_challenge(request):
     refused_chore = get_object_or_404(RefusedChore, pk=request.POST.get('pk'))
     refused_chore.confirm()
-    messages.info(request, "You rejected {0}'s reason for refusing \"{1}\"".format(refused_chore.user.username, refused_chore.chore.name))
+    messages.error(request, "You rejected {0}'s reason for refusing \"{1}\"".format(refused_chore.user.username, refused_chore.chore.name))
     return redirect('mycolemass')
 
 @login_required
-def infractions_stat(request):
-    pass
+def new(request):
+    if request.method == 'POST':
+        form = RecurringChoreForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['name'] in [i.name for i in RecurringChore.objects.all()]:
+                messages.error(request, "There is already a chore by that name. Please chose another name.")
+            else:
+                form.instance.assignee = request.user
+                form.instance.round_robin = random_order()
+                form.save()
+                messages.success(request, "\"{0}\" was successfully created.".format(form.cleaned_data['name']))
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
+    return redirect('chores:settings')
+
+@login_required
+def edit(request):
+    if request.method == 'POST':
+        chore = get_object_or_404(RecurringChore, pk=request.POST.get('pk'))
+        old_name = chore.name
+        form = RecurringChoreForm(request.POST, instance=chore)
+        if form.is_valid():
+            if form.cleaned_data['name'] != old_name:
+                if form.cleaned_data['name'] in [i.name for i in RecurringChore.objects.all()]:
+                    messages.error(request, "There is already a chore by that name. Please chose another name.")
+                else:
+                    form.save()
+                    messages.success(request, "\"{0}\" was successfully updated.".format(chore.name))
+            else:
+                form.save()
+                messages.success(request, "\"{0}\" was successfully {1}activated.".format(chore.name, ("de", "")[chore.active]))
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
+    return redirect('chores:settings')
+
+@login_required
+def delete(request):
+    if request.method == 'POST':
+        chore = get_object_or_404(RecurringChore, pk=request.POST.get('pk'))
+        if chore.completedchore_set.all() or chore.refusedchore_set.all():
+            messages.error(request, "You may not delete this chore.")
+        else:
+            messages.success(request, "You successfully deleted \"{0}\".".format(chore.name))
+            chore.delete()
+    return redirect('chores:settings')
 
 class RecurringChoreListView(ListView):
-    queryset = RecurringChore.objects.order_by('name')
+    queryset = RecurringChore.objects.order_by('-active', 'name')
     context_object_name = 'chores'
     template_name = 'chores/settings.html'
     
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super(RecurringChoreListView, self).dispatch(*args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(RecurringChoreListView, self).get_context_data(**kwargs)
+        context['form'] = RecurringChoreForm()
+        return context
 
-class RecurringChoreUpdate(UpdateView):
-    model = RecurringChore
-    fields = ['name']
-    template_name = 'chores/edit.html'
-    success_url = reverse_lazy('chores:settings')
+# class RecurringChoreUpdate(UpdateView):
+    # model = RecurringChore
+    # fields = ['name']
+    # template_name = 'chores/edit.html'
+    # success_url = reverse_lazy('chores:settings')
 
-class RecurringChoreCreate(CreateView):
-    model = RecurringChore
-    fields = ['name']
-    template_name = 'chores/new.html'
-    success_url = reverse_lazy('chores:settings')
+# class RecurringChoreCreate(CreateView):
+    # model = RecurringChore
+    # fields = ['name']
+    # template_name = 'chores/new.html'
+    # success_url = reverse_lazy('chores:settings')
     
-    def form_valid(self, form):
-        form.instance.assignee = self.request.user
-        form.instance.active = True
-        return super(RecurringChoreCreate, self).form_valid(form)
+    # def form_valid(self, form):
+        # form.instance.assignee = self.request.user
+        # form.instance.active = True
+        # return super(RecurringChoreCreate, self).form_valid(form)
 
-class RecurringChoreDelete(DeleteView):
-    model = RecurringChore
-    success_url = reverse_lazy('chores:settings')
-    template_name = 'chores/confirm_delete.html'
+# class RecurringChoreDelete(DeleteView):
+    # model = RecurringChore
+    # success_url = reverse_lazy('chores:settings')
+    # template_name = 'chores/confirm_delete.html'
     
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if not self.object.completedchore_set.all() and not self.object.refusedchore_set.all():
-            name = self.object.name
-            self.object.delete()
-            success_url = self.get_success_url()
-            messages.info(request, "You successfully deleted \"{0}\".".format(name))
-            return HttpResponseRedirect(success_url)
-        else:
-            messages.error(request, 'You may not delete this chore.')
-            return HttpResponseRedirect(self.get_success_url())
-
-
-@login_required
-def update_active_chores(request):
-    chores_to_activate = RecurringChore.objects.filter(pk__in=request.POST.getlist('active'))
-    activated_chores = []
-    deactivated_chores = []
-    for chore in RecurringChore.objects.all():
-        if chore in chores_to_activate and not chore.active:
-            chore.active = True
-            chore.save()
-            activated_chores.append(chore)
-        elif chore not in chores_to_activate and chore.active:
-            chore.active = False
-            chore.save()
-            deactivated_chores.append(chore)
-    if activated_chores:
-        messages.info(request,
-            "Activated: {0}".format(', '.join([chore.name for chore in activated_chores]))
-            )
-    if deactivated_chores:
-        messages.info(request,
-            "Deactivated: {0}".format(', '.join([chore.name for chore in deactivated_chores]))
-            )
-    if not activated_chores and not deactivated_chores:
-        messages.info(request, "No chore was updated.")
-    return redirect('chores:settings')
+    # def delete(self, request, *args, **kwargs):
+        # self.object = self.get_object()
+        # if not self.object.completedchore_set.all() and not self.object.refusedchore_set.all():
+            # name = self.object.name
+            # self.object.delete()
+            # success_url = self.get_success_url()
+            # messages.success(request, "You successfully deleted \"{0}\".".format(name))
+            # return HttpResponseRedirect(success_url)
+        # else:
+            # messages.error(request, 'You may not delete this chore.')
+            # return HttpResponseRedirect(self.get_success_url())

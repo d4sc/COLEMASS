@@ -1,59 +1,32 @@
 {% extends 'base.html' %}
-
+{% block title %} Chores {% endblock %}
+{% block h1 %} Chores {% endblock %}
 {% block content %}
-    <h1 class="menupointtitle">Chores</h1>
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif%}
-    <div class="subpointlist">
-        <table class="tab">
-        {% for chore in chores %}
-        <!--
-            {% if chore.kind == 'd' %}
-                <tr>
-                    <td>{{ chore.name }}</td>
-                    <td>assigned {{ chore.assigned_time|timesince }} ago</td>
-                    <td>Dishes out: {{ chore.current_assigned.dish_set.count }}</td>
-                    <td></td>
-                    <td><form action="chores/chore_nudge/" method="post" >
-                    {% csrf_token %}
-                    <input type="hidden" name="pk" value="{{chore.pk}}">
-                    <input type="hidden" name="pk2" value="{{chore.current_assigned.pk}}">
-                    <input type="submit" value="Nudge" {% if chore.current_assigned == request.user %}disabled{% endif %} >
-                    </td>
-                    </form>
-                    <!--
-                        <td><a class="btn btn-default {% if chore.current_assigned == request.user %}disabled{% endif %}"
-                            href="{% url 'chore_nudge' pk=chore.pk pk2=chore.current_assigned.pk%}">Nudge</a></td>
-                    ->
-                </tr>
-            {% else %}
-        -->
-            <tr>
-                <td>{{ chore.name }}</td>
-                <td>assigned {{ chore.assigned_time|timesince }} ago</td>
-                <td>to {% if chore.assignee == request.user %}you{% else %}{{ chore.assignee }}{% endif %}</td>
-                <td>
-                    <form action="{% url 'chores:done' %}" method="post" >
-                        {% csrf_token %}
-                        <input type="hidden" name="pk" value="{{ chore.pk }}">
-                        <input type="submit" value="{% if chore.assignee == request.user %}Done{% else %}On me{% endif %}">
-                    </form>
-                </td>
-                <td>
-                    <form action="{% url 'chores:nudge' %}" method="post" >
-                        {% csrf_token %}
-                        <input type="hidden" name="pk" value="{{ chore.pk }}">
-                        <input type="submit" value="Nudge" {% if chore.assignee == request.user %}disabled{% endif %}>
-                    </form>
-                </td>
-            </tr>
-       <!--{% endif %}-->
-        {% endfor %}
-        </table>
+<div class="row main">
+  {% for chore in chores %}
+    <div class="row div-hover">
+      <div class="col-md-4 col-xs-12"><strong>{{ chore.name }}</strong></div>
+      <div class="col-md-3 col-sm-6 col-xs-12">assigned {{ chore.assigned_time|timesince }} ago</div>
+      <div class="col-md-3 col-sm-4 col-xs-6">to {% if chore.assignee == request.user %}you{% else %}{{ chore.assignee }}{% endif %}</div>
+      <div class="col-md-1 col-sm-1 col-xs-3 text-right">
+        <form action="{% url 'chores:done' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="pk" value="{{ chore.pk }}">
+          <button type="submit" class="btn btn-success btn-xs">{% if chore.assignee == request.user %}Done{% else %}On me{% endif %}</input>
+        </form>
+      </div>
+      <div class="col-md-1 col-sm-1 col-xs-3 text-right">
+        <form action="{% url 'chores:nudge' %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="pk" value="{{ chore.pk }}">
+          <button type="submit" class="btn btn-primary btn-xs" {% if chore.assignee == request.user %}disabled{% endif %}>Nudge</input>
+        </form>
+      </div>
     </div>
+  {% empty %}
+    <div class="row">
+      <div class="col-md-12"><em>There are no active chores at the moment.</em></div>
+    </div>
+  {% endfor %}
+</div>
 {% endblock %}

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from django.contrib.messages import constants as message_constants
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -118,7 +119,15 @@ EMAIL_HOST_USER = 'noreplycolemass@gmail.com'
 EMAIL_HOST_PASSWORD = 'colemass2015'
 EMAIL_PORT = 587
 
-#Setings for celery
+# Custom urls for authentication views
+LOGIN_REDIRECT_URL = ''
+LOGIN_URL = '/login/'
+LOGOUT_URL = '/logout/'
+
+# Custom tags for messages
+MESSAGE_TAGS = {message_constants.ERROR: 'danger'}
+
+#Settings for celery
 import djcelery
 djcelery.setup_loader()
 BROKER_URL='redis://localhost:6379/0'
