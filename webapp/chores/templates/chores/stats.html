@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+	<div>
+		<h1 class = menupointtitle> STATS </h1>
+	</div>
+	<div class=marginalize>
+	<div class=floatingleft>
+		<h3 class="subpoint">Hall Of Fame</h3>
+		<p>Users with highest numbers of completed chores</p>
+		<ul>
+    {% for user in users_hof %}
+        <li>{{user}}</li>
+    {% endfor %}
+	</ul>
+	</div>
+	<div class=floatingright>
+		<h3 class="subpoint">Wall Of Shame</h3>
+		<p>Users with highest numbers of Infractions</p>
+		<ul>
+    {% for user in users %}
+        <li>{{user}}</li>
+    {% endfor %}
+	</ul>
+	</div>
+</div>
+
+{% endblock %}

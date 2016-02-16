@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block content %}
+<table width="150px">
+  <tr>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:dishlist' %}">Dish list</a>
+    </td>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:newdish' %}">New dish</a>
+    </td>
+  </tr>
+</table>
+<h1 class="menupointtitle">Dish list</h1>
+  <div class="subpointlist">
+  {% if messages %}
+  <ul class="messages">
+{% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+{% endfor %}
+  </ul>
+{% endif %}
+  <form action="" method="post">
+  <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+  <table width="300px">
+    <tr>
+      <td>Dish:</td>
+      <td>{{ dish.getTitle }}</td>
+    </tr>
+    <tr>
+      <td>Assignee:</td>
+      {% if usr|length == 1 %}
+      <td>{{ usr.0.username }}</td>
+      {% elif usr|length == 2 %}
+      <td>
+        <input type="radio" name="usrlist" id="rb_0" value="0">
+        <label for="rb_0">{{usr.0.username}}</label><br>
+        <input type="radio" name="usrlist" id="rb_0" value="1">
+        <label for="rb_1">{{usr.1.username}}</label>
+      </td>
+      {% endif %}
+    </tr>
+    <tr>
+      <td>Message:</td>
+      <td><textarea name="txt_message" maxlength="50" placeholder="Message"></textarea></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><br>
+      <input type="hidden" name="entry_id" value="{{ entry_id }}">
+<input type="submit" name="submit" value="Create chore"></td>
+    </tr>
+  </table>
+  </form>
+ </div>
+{% endblock %}

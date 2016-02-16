@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block content %}
+<table width="150px">
+  <tr>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:dishlist' %}">Dish list</a>
+    </td>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:newdish' %}">New dish</a>
+    </td>
+  </tr>
+</table>
+<h1 class="menupointtitle">Dish list</h1>
+  <div class="subpointlist">
+  {% if messages %}
+  <ul class="messages">
+{% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+{% endfor %}
+  </ul>
+{% endif %}
+
+    <table class='tab'>
+      {% for dish in dishes %}
+      <tr>
+        <td>{{ dish.getTitle }}</td>
+        <td>
+          {% if dish.isTakenOut %}
+          was taken out
+          {% if dish.getAssignee %}
+          by {{ dish.getAssignee }}
+          {% endif %}
+          {% else %}
+          was returned in the Cupboard
+          {% endif %}{{ dish.getLastUpdateTime|naturaltime }}
+        </td>
+        <td>
+          <form action="{% url 'dishes:editdish' %}" method="post" >
+            {% csrf_token %}
+            <input type="hidden" name="dish_id" value="{{ dish.id }}">
+            <input type="submit" value="Edit">
+          </form>
+        </td>
+        <td>
+          <form action="{% url 'dishes:dishlog' %}" method="post" >
+            {% csrf_token %}
+            <input type="hidden" name="dish_id" value="{{ dish.id }}">
+            <input type="submit" value="Log">
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+ </div>
+{% endblock %}

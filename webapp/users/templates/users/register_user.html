@@ -1,0 +1,48 @@
+{% extends 'base_reg.html' %}
+{% block main %}
+
+<form action="/registeruser/" method="post" autocomplete="false">
+    <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+    <p class="pawd">Please specify your Username, Name, and password.<br><br>
+      <input type="hidden" value="{{ valid_key }}" name="valid_key">
+      <input type="hidden" value="{{ user }}" name="oldusename">
+      <table>
+        <tr>
+          <td>Email*:</td><td><input type="text" value="{{ user }}" name="email"></td>
+          {% if msgemail %}
+            <span style="color: #F00; text-align:left;">{{msgemail}}</span><br><br>
+          {% endif %}
+        </tr><tr>
+          <td>Username*:</td><td><input type="text" name="nwuname" placeholder=" Enter Username" autocomplete="off"></td><br><br>
+      {% if msguser %}
+        <span style="color: #F00; text-align:left;">{{msguser}}</span><br><br>
+      {% endif %}
+    </tr><tr>
+      <td>First Name:</td><td><input type="text" name="fname" placeholder=" Enter First Name"></td>
+      </tr><tr>
+      <td>Last Name:</td><td><input type="text" name="lname" placeholder=" Enter Last Name" value="" autocomplete="false"></td>
+      </tr><tr>
+      <td>Password*:</td><td><input type="password" name="nwpaswd" placeholder=" Enter Password" autocomplete="false"></td>
+      </tr><tr>
+      <td>Re-enterPassword*:</td><td><input type="password" name="repaswd" placeholder=" Enter Password" autocomplete="false"></td>
+      {% if msgpswd %}
+        <span style="color: #F00; text-align:left;">{{msgpswd}}</span><br><br>
+      {% endif %}
+      </tr><tr>
+        <select name="card_id">
+          {% for car in cards %}
+            <option value="{{car.key}}">{{car.key}}</option>
+          {% endfor %}
+    		</select>
+        </tr><tr>
+      <td><input type="submit" value="Add Me"></td><td>
+      {% if msg %}
+        <span style="color: #F00; text-align:left;">{{msg}}</span>
+      {% endif %}
+    </td>
+    </tr><tr>
+    </table>
+
+    </p>
+</form>
+{% endblock %}

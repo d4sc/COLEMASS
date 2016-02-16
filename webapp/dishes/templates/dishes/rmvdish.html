@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<table width="150px">
+  <tr>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:dishlist' %}">Dish list</a>
+    </td>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:newdish' %}">New dish</a>
+    </td>
+  </tr>
+</table>
+<h1 class="menupointtitle">Remove {{dish.getTitle}}</h1>
+<div class="subpointlist">
+  <form action="{% url 'dishes:rmvdish' dish.id %}" method="post">
+  <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+    <table>
+      <tr>
+        <td><span>Are you sure you want to remove {{dish.getTitle}}? The operation can't be undone.</span></td> 
+      </tr>
+      <tr>
+        <td align="right"><br><input type="submit" name="submit" value="Remove"></td> 
+      </tr>
+    </table>
+  </form>
+  <br/>
+</div>
+{% endblock %}

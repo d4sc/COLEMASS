@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="settings">
+        <h1 class="menupointtitle"> SETTINGS </h1>
+{% if messages %}
+<ul class="messages">
+{% for message in messages %}
+<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+        <div class="floatingright">
+            <form action="{% url 'users:deactivate' %}" method="POST">
+                {% csrf_token %}
+                <input type="password" name="pswd" placeholder="Enter password"><br><br>
+                <input type="hidden" name="reason" value="The user has left colemass">
+                <input type="submit" value="DEACTIVATE">
+                {% if msgerror %}
+                    <p>{{ msgerror }}</p><br>
+                {% endif %}
+            </form>
+
+            <h3 class="subpoint">Invite New User</h3>
+            <form action="{% url 'users:newuser' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" name="newuser" placeholder="Enter Email for Invitee">
+                <input type="submit" value="Invite">
+                {% if msgcreuser %}
+                    <p>{{ msgcreuser }}</p><br>
+                {% endif %}
+            </form>
+        </div>
+
+    <!--***************************************************************************************************-->
+
+        <div align="left" style="margin-left:45px; width:100%;">
+        {% if request.user.username == 'default' %}
+            <h3 class="subpoint">Change username</h3>
+            <form action="{% url 'users:change_username' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" name="new_username" placeholder="Enter username">
+                <input type="submit" value="Change username">
+            </form>
+        {% endif %}
+            <h3 class="subpoint">Change Password</h3>
+            <form action="{% url 'users:update_password' %}" method="POST">
+                {% csrf_token %}
+                <input type="password" name="oldpswd" placeholder="Enter Old Password">
+                <input type="password" name="newpswd" placeholder="Enter New Password">
+                <input type="submit" value="Update Password">
+            </form>
+            {% if msgpaswd %}
+                <span style="color: #F00; text-align:left;">{{ msgpaswd }}</span>
+            {% endif %}
+
+
+    <!--***************************************************************************************************-->
+
+            <h3 class="subpoint">Change E-Mail address</h3>
+            <form action="{% url 'users:update_email' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" name="newemail" placeholder="Enter New Email">
+                <input type="password" name="pswd" placeholder="Enter Password">
+                <input type="submit" value="Update Email">
+            </form>
+            {% if msgemail %}
+                <span style="color: #F00; text-align:left;">{{ msgemail }}</span>
+            {% endif %}
+
+    <!--***************************************************************************************************-->
+    <script language="javascript">
+    function toggle() {
+        var ele = document.getElementById("toggleText");
+        var text = document.getElementById("displayText");
+        if(ele.style.display == "block") {
+                ele.style.display = "none";
+            text.innerHTML = '<input type="checkbox"  name="vehicle" value="Bike" onclick="javascript:toggle();" {% if is_absent%} checked="checked"{% endif %}>Going Away';
+        }
+        else {
+            ele.style.display = "block";
+            text.innerHTML = '<input type="checkbox"  name="vehicle" value="Bike" onclick="javascript:toggle();" checked="checked">Going Away';
+        }
+    }
+    </script>
+        <h3 class="subpoint">Presence</h3>
+        <span id="displayText"><input type="checkbox" onclick="javascript:toggle();" {% if is_absent%}checked="checked"{% endif %}>Going Away</span>
+        {% if msgpres %}
+            <span style="color: #F00; text-align:left;">{{ msgpres }}</span>
+        {% endif %}
+        <div id="toggleText" style="display: none">
+            <form action="{% if not is_absent %}{% url 'users:set_absent' %}{% else %}{% url 'users:set_present' %}{% endif %}" method="POST">
+                {% csrf_token %}
+                <input type="password" name="pswd" placeholder="Enter Password"><br><br>
+                {%if not is_absent%}
+                    <textarea name="reason" rows="4" cols="30" maxlength="140" placeholder="Enter reason for going away."></textarea><br><br>
+                {% endif %}
+                <input type="submit" value="{% if is_absent %}Present{% else %}Absent{% endif %}">
+            </form>
+        </div>
+
+    <!--***************************************************************************************************-->
+
+        <h3 class="subpoint">Card Broken</h3>
+        <form action="{% url 'users:broken_card' %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="Report Card">
+        </form>
+
+    <!--***************************************************************************************************-->
+
+        <h3 class="subpoint">Change Card</h3>
+        <form action="{% url 'users:update_card' %}" method="POST">
+            {% csrf_token %}
+            <select name="card_id">
+                {% for card in cards %}
+                    <option value="{{ card.key }}">{{ card.key }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Update Card">
+        </form>
+        {% if msgcard %}
+            <span style="color: #F00; text-align:left;">{{ msgcard }}</span>
+        {% endif %}
+        </div>
+    </div>
+    <!--***************************************************************************************************-->
+{% endblock %}

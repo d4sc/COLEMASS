@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<table width="250px">
+  <tr>
+    <td>
+      <a style="color:white;" href="{% url 'hardware:hwlist' %}">Hardware list</a>
+    </td>
+    <td>
+      <a style="color:white;" href="{% url 'hardware:newhw' %}">New hardware</a>
+    </td>
+  </tr>
+</table>
+<h1 class="menupointtitle">New hardware</h1>
+<div class="subpointlist">
+{% if messages %}
+<ul class="messages">
+{% for message in messages %}
+<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+  <form action="{% url 'hardware:newhw'%}" method="post">
+    <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+    <table>
+      <tr>
+        <td>Hardware Id:</td>
+        <td><input type="text" name="txt_hwid" id="txt_hwid"/></td>
+      </tr>
+      <tr>
+        <td>Serial number:</td>
+        <td><input type="text" name="txt_sn" id="txt_sn"/></td>
+      </tr>
+      <tr>
+        <td>Title:</td>
+        <td><input type="text" name="txt_title" id="txt_title"/></td>
+      </tr>
+      <tr>
+      <td>Type:</td>
+      <td>
+        <input type="radio" name="hwtype" id="rb_apl" value="0">
+        <label for="rb_apl">Appliance Controller</label><br>
+        <input type="radio" name="hwtype" id="rb_dt" value="1">
+        <label for="rb_dt">Dish tracker</label>
+      </td>
+      </tr>
+      <tr>
+      <td></td>
+        <td align="right"><br><input type="submit" name='btn_save' value="Save"></td>
+      </tr>
+    </table>
+  </form>
+  <br/>
+</div>
+{% endblock %}

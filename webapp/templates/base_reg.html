@@ -1,0 +1,26 @@
+{% load staticfiles %}
+<html>
+    <head>
+      {% if user.get_profile.is_store %}
+      <meta http-equiv="REFRESH" content="0;url={{ user.get_profile.store_url }}">
+      {% endif %}
+      {% block refresh %}
+      {% endblock %}
+        <title>{% block title %} COLEMASS {% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="shortcut icon" href="{% static 'images/c.ico' %}" type="image/x-icon"/ >
+    </head>
+    <body>
+      <div class="page-header">
+          <h1><a href="/">COLEMASS</a></h1>
+          {% if user.is_authenticated %}
+              <p class="top-menu">Hello {{ user.username }}. <a href="{% url 'django.contrib.auth.views.logout' %}">Log out</a></p>
+          {% else %}
+          {% endif %}
+      </div>
+        <div class="row">
+            {% block main %}
+            {% endblock %}
+        </div>
+    </body>
+</html>

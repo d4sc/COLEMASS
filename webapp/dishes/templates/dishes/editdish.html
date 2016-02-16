@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<table width="150px">
+  <tr>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:dishlist' %}">Dish list</a>
+    </td>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:newdish' %}">New dish</a>
+    </td>
+  </tr>
+</table>
+<h1 class="menupointtitle">Edit dish:&nbsp; {{dish.getTitle}}</h1>
+<div class="subpointlist">
+{% if messages %}
+  <ul class="messages">
+{% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+{% endfor %}
+  </ul>
+{% endif %}
+  <form action="{% url 'dishes:editdish'%}" method="post">
+    <input type="hidden" name="dish_id" value="{{ dish.id }}">
+    <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+    <table>
+      <tr>
+        <td>Tag:</td>
+        <td>{{dish.getTag}}</td>
+      </tr>
+      <tr>
+        <td>Title:</td>
+        <td><input type="text" name="txt_Title" id="txt_Title" value="{{dish.getTitle}}"/></td>
+      </tr>
+      <tr>
+        <td align="right"><br><input type="submit" name='btn_rmv' value="Remove"></td>
+        <td align="right"><br><input type="submit" name='btn_save' value="Save"></td>
+      </tr>
+    </table>
+  </form>
+  <br/>
+</div>
+{% endblock %}

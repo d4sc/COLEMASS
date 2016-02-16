@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="menupointtitle">Chores</h1>
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif%}
+    <div class="subpointlist">
+        <table class="tab">
+        {% for chore in chores %}
+        <!--
+            {% if chore.kind == 'd' %}
+                <tr>
+                    <td>{{ chore.name }}</td>
+                    <td>assigned {{ chore.assigned_time|timesince }} ago</td>
+                    <td>Dishes out: {{ chore.current_assigned.dish_set.count }}</td>
+                    <td></td>
+                    <td><form action="chores/chore_nudge/" method="post" >
+                    {% csrf_token %}
+                    <input type="hidden" name="pk" value="{{chore.pk}}">
+                    <input type="hidden" name="pk2" value="{{chore.current_assigned.pk}}">
+                    <input type="submit" value="Nudge" {% if chore.current_assigned == request.user %}disabled{% endif %} >
+                    </td>
+                    </form>
+                    <!--
+                        <td><a class="btn btn-default {% if chore.current_assigned == request.user %}disabled{% endif %}"
+                            href="{% url 'chore_nudge' pk=chore.pk pk2=chore.current_assigned.pk%}">Nudge</a></td>
+                    ->
+                </tr>
+            {% else %}
+        -->
+            <tr>
+                <td>{{ chore.name }}</td>
+                <td>assigned {{ chore.assigned_time|timesince }} ago</td>
+                <td>to {% if chore.assignee == request.user %}you{% else %}{{ chore.assignee }}{% endif %}</td>
+                <td>
+                    <form action="{% url 'chores:done' %}" method="post" >
+                        {% csrf_token %}
+                        <input type="hidden" name="pk" value="{{ chore.pk }}">
+                        <input type="submit" value="{% if chore.assignee == request.user %}Done{% else %}On me{% endif %}">
+                    </form>
+                </td>
+                <td>
+                    <form action="{% url 'chores:nudge' %}" method="post" >
+                        {% csrf_token %}
+                        <input type="hidden" name="pk" value="{{ chore.pk }}">
+                        <input type="submit" value="Nudge" {% if chore.assignee == request.user %}disabled{% endif %}>
+                    </form>
+                </td>
+            </tr>
+       <!--{% endif %}-->
+        {% endfor %}
+        </table>
+    </div>
+{% endblock %}

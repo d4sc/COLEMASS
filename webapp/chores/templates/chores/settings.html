@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Recurring chores</h2>
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif%}
+<p><a href="{% url 'chores:new' %}" class="button">Create new</a></p>
+<table>
+    <tr>
+        <th>Active</th>
+        <th>Name</th>
+        <th></th>
+    </tr>
+    <form action="{% url 'chores:update' %}" method="post">
+        {% csrf_token %}
+        {% for chore in chores %}
+            <tr>
+                <td style="text-align:center;"><input type="checkbox" name="active" value="{{ chore.id }}" {% if chore.active %}checked{% endif %}></td>
+                <td>{{ chore.name }}</td>
+                <td><a href="{% url 'chores:edit' chore.id %}" class="button">Edit</a></td>
+                <td>
+                    {% if not chore.completedchore_set.all and not chore.refusedchore_set.all%}
+                        <a href="{% url 'chores:delete' chore.id %}" class="button">Delete</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3"><input type="submit" name="submit" value="Save"></td>
+        </tr>
+    </form>
+</table>
+{% endblock %}

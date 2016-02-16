@@ -1,0 +1,21 @@
+{% extends 'base_reg.html' %}
+{% block main %}
+<div class="password">
+<form action="/resetpass/" method="post">
+    {% csrf_token %}
+    <p>Enter new password.</p>
+    <input type="hidden" name="user" value="{{user}}">
+    <input type="hidden" name="valid_key" value="{{valid_key}}">
+    <p><input type="password" name="newpswd" placeholder=" Enter New Password"></p>
+    <p><input type="password" name="repswd" placeholder=" Re-Enter New Password"></p>
+    <p><input type="submit" value="Update Password"></p>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif%}
+</form>
+</div>
+{% endblock %}

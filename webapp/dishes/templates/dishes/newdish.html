@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block content %}
+<table width="150px">
+  <tr>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:dishlist' %}">Dish list</a>
+    </td>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:newdish' %}">New dish</a>
+    </td>
+  </tr>
+</table>
+<h1 class="menupointtitle">Register new dishes</h1>
+<div class="subpointlist">
+{% if messages %}
+<ul class="messages">
+{% for message in messages %}
+<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+  <form action="{% url 'dishes:newdish' %}" method="post">
+  <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
+  <table width="600px">
+    <tr>
+      <td>Check</td>
+      <td>Tag</td>
+      <td>Title</td>
+      <td>Detection time</td>
+    </tr>    
+{% for dish in dishes %}
+    <tr>
+      <td><input type="checkbox" name="checkdish" value="{{dish.id}}"></td>
+      <td>{{dish.getTag}}</td>
+      <td><input type="text" name="title_{{dish.id}}" value="{{dish.getTitle}}"/></td>
+      <td>{{dish.getDetectionTime|naturaltime}}</td>
+    </tr>
+{% endfor %}
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td><br><input type="submit" name="submit" value="Register"></td>
+    </tr>     
+  </table>
+  </form>
+  <br/>
+</div>
+{% endblock %}

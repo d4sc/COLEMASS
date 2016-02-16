@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block content %}
+<table width="150px">
+  <tr>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:dishlist' %}">Dish list</a>
+    </td>
+    <td>
+      <a style="color:white;" href="{% url 'dishes:newdish' %}">New dish</a>
+    </td>
+  </tr>
+</table>
+<h1 class="menupointtitle">Dish list</h1>
+  <div class="subpointlist">
+  {% if messages %}
+  <ul class="messages">
+{% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+{% endfor %}
+  </ul>
+{% endif %}
+{% if dishes %}
+  <table cellpadding="10px">
+    <tr>
+      <td>Title</td>
+      <td>Take time</td>
+      <td></td>
+      <td></td>
+    </tr>
+    {% for dish in dishes %}
+    <tr>
+      <td>{{ dish.getTitle }}</td>       
+      <td>{{ dish.getLastUpdateTime|naturaltime }}</td>
+      <td><a style="text-align:center" href="{% url 'dishes:editdish' dish.id %}">Edit</a></td>
+      <td><a style="text-align:center" href="{% url 'dishes:dishlog' dish.id %}">Log</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+{% else %}
+<span>There are no dishes assigned to you.</span>
+{% endif %}
+</div>
+{% endblock %}

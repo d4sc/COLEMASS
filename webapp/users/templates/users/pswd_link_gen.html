@@ -1,0 +1,22 @@
+{% extends 'base_reg.html' %}
+{% block main %}
+<div class="password">
+<form action="/sendresetemail/" method="post">
+    {% csrf_token %}
+    <p>Enter your username or email address to receive a password reset link.</p>
+    <input type="hidden" name="user" value="{{user}}">
+    <input type="hidden" name="valid_key" value="{{valid_key}}">
+    <p><input type="text" name="uname" placeholder="Enter username"> OR</p>
+    <p><input type="text" name="email" placeholder="Enter email"></p>
+    <p><input type="submit" value="Send Password Reset Link"></p>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif%}
+</form>
+</div>
+{% endblock %}
+

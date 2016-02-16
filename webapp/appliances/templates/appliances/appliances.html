@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="menupointtitle"> APPLIANCES </h1>
+    <div class="subpointlist">
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif%}
+    <table class="tab">
+        {% for appliance in appliances %}
+        <tr>
+            <td>{{ appliance.name }}: </td>
+            <td>
+              {% if appliance.last_user %}
+                  {% if appliance.is_in_use %}
+                      Currently used by {% if appliance.current_user == request.user %}you{% else %}{{ appliance.current_user }}{% endif %}.
+                  {% else %}
+                      Last used by {% if appliance.last_user == request.user %}you{% else %}{{ appliance.last_user }}{% endif %}.
+                  {% endif %}
+              {% else %}
+                  Never used.
+              {% endif %}
+            </td>
+            <td>
+                {% if not appliance.is_in_use %}
+                <form action="{% url 'appliances:report' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="pk" value="{{ appliance.pk }}">
+                    <input type="submit" value="Report" {% if appliance.last_user == request.user %}disabled{% endif %}>
+                </form>
+                {% else %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    </div>
+{% endblock %}

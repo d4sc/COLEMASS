@@ -1,0 +1,11 @@
+{% extends 'base_reg.html' %}
+{% block refresh %}
+{% if user.is_authenticated%}
+<meta http-equiv="REFRESH" content="0;url={% url 'chores.views.mycolemass' %}">
+{% endif %}
+{% endblock %}
+{% block main %}
+<div class="404">
+  <h1><a href="/">COLEMASS</a></h1>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base_reg.html' %}
+
+{% block main  %}
+    <div class="sidebar">
+        <div class="menu">
+            <span class="lis"><br>
+            <a href="{% url 'mycolemass' %}">My Colemass</a><br></span>
+            <span class="lis">
+            <a href="{% url 'chores:chores' %}">Chores</a><br></span>
+            <span class="lis">
+            <a href="{% url 'appliances:appliances' %}">Appliances</a><br></span>
+            <span class="lis">
+            <a href="{% url 'stats' %}">Stats</a><br></span>
+            <div class="dropdown">
+                <span class="dropbtn">Settings</span>
+                <div class="dropdown-content">
+                    <span class="lis">
+                    <a href="{% url 'users:settings' %}">User Settings</a></span>
+                    <span class="lis">
+                    <a href="{% url 'dishes:dishlist' %}">Dish Settings</a></span>
+                    <span class="lis">
+                    <a href="{% url 'chores:settings' %}">Chore Settings</a></span>
+                    <a href="{% url 'hardware:hwlist' %}">Hardware Settings</a></span>
+                    <span class="lis">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+    {% if request.user.userdetail.is_absent %}
+        <form action="{% url 'users:come_back' %}"><input type="submit" value="Click if you are back!"></form>
+    {% else %}
+        {% block content %}
+        {% endblock %}
+    {% endif %}
+{% endblock %}
+    </div>
