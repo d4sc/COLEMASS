@@ -1,24 +1,18 @@
 {% extends 'base.html' %}
+{% block title %}Hardware list{% endblock %}
+{% block h1 %}Hardware list{% endblock %}
 {% block content %}
 <table width="250px">
   <tr>
     <td>
-      <a style="color:white;" href="{% url 'hardware:hwlist' %}">Hardware list</a>
+      <a href="{% url 'hardware:hwlist' %}">Hardware list</a>
     </td>
     <td>
-      <a style="color:white;" href="{% url 'hardware:newhw' %}">New hardware</a>
+      <a href="{% url 'hardware:newhw' %}">New hardware</a>
     </td>
   </tr>
 </table>
-<h1 class="menupointtitle">Hardware list</h1>
 <div class="subpointlist">
-{% if messages %}
-<ul class="messages">
-{% for message in messages %}
-<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-{% endfor %}
-</ul>
-{% endif %}
   <form action="{% url 'hardware:hwlist' %}" method="post">
   <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
   <table width="500px">
