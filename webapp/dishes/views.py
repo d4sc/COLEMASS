@@ -112,7 +112,7 @@ def newDishChore(request):
         if ((dish_log.taken_by != request.user) and
             (dish_log.returned_by != request.user) and
             (dish_log.taken_by != dish_log.returned_by) and
-            (dish_log.taken_by is not None)):
+            (dish_log.returned_by is not None)):
             if user_radio is not None:
                 reported_user = (dish_log.taken_by, dish_log.returned_by)[int(user_radio)]
             else:
