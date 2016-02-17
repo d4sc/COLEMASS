@@ -19,7 +19,7 @@
         <form action="{% url 'chores:nudge' %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="pk" value="{{ chore.pk }}">
-          <button type="submit" class="btn btn-primary btn-xs"  {% chore.assignee == request.user %}disabled{% endif %}>Nudge</input>
+          <button type="submit" class="btn btn-primary btn-xs"  {% if chore.assignee == request.user %}disabled{% endif %}>Nudge</input>
         </form>
       </div>
     </div>

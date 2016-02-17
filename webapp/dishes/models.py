@@ -76,13 +76,19 @@ class ItemTracker(Hardware):
         if len(dishes) > 0:
 
             ud = Card.objects.get(key=userCard).user
-            for dish in dishes:
+            for di in dishes:
                 t = timezone.now()
-                dish.updateStatus(None, t)
-                dish.save()
-                cc += '%s is put in cupbpard, ' % dish.getTitle()
+                di.updateStatus(None, t)
+                di.save()
+                cc += '%s is put in cupbpard, ' % di.getTitle()
 
-                DishLog.log(dish, ud, t)
+                DishLog.log(di, ud, t)
+                try:
+                    dc = DishChore.objects.get(dish=di, active=True)
+                    dc.active = False
+                    dc.save()
+                except ObjectDoesNotExist:
+                    pass
 
         # if there are unregistered tags
         if len(dishTagList) > len(dishes):
