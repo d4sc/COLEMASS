@@ -43,7 +43,7 @@
   <h2 class="sub-header">My Chores</h2>
   {% for chore in chores %}
     <div class="row div-hover">
-      <div class="col-md-4 col-xs-12"><strong>{{ chore.name }}</strong></div>
+      <div class="col-md-4 col-xs-12"><strong>{{ chore.name }}</strong> {{ "Automated message" in chore.name }}</div>
       <div class="col-md-3 col-sm-6 col-xs-12">assigned {{ chore.assigned_time|timesince }} ago</div>
       <div class="col-md-3 col-sm-4 col-xs-6">{{ chore.nudges }} nudge{{ chore.nudges|pluralize }}</div>
       <div class="col-md-1 col-sm-1 col-xs-3 text-right">
