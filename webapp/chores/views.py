@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from django.db.models import Count
 from django.contrib import messages
 
+from colemass import settings
 from .forms import RecurringChoreForm
 from .models import *
 from dishes.models import *
@@ -98,6 +99,14 @@ def completed_chore_challenge(request):
     completed_chore = get_object_or_404(CompletedChore, pk=request.POST.get('pk'))
     completed_chore.challenge()
     messages.error(request, "You rejected {0}'s completion of \"{1}\"".format(completed_chore.user.username, completed_chore.chore.name))
+
+    from dishes.tasks import sendemail
+    title = "[COLEMASS] Chore completion refused"
+    body = "Hi {0},\n\nThe chore \"{1}\" that you've completed was declined. You've been reassigned the chore".format(completed_chore.user, completed_chore.chore)
+    sender = getattr(settings, "EMAIL_HOST_USER", 'colemass')
+    to = [completed_chore.user.email, ]
+    sendemail(title, body, sender, to)
+
     return redirect('mycolemass')
 
 @login_required
@@ -113,7 +122,19 @@ def refusal_challenge(request):
     refused_chore = get_object_or_404(RefusedChore, pk=request.POST.get('pk'))
     refused_chore.confirm()
     messages.error(request, "You rejected {0}'s reason for refusing \"{1}\"".format(refused_chore.user.username, refused_chore.chore.name))
+
+    from dishes.tasks import sendemail
+    title = "[COLEMASS] Chore refusal rejected"
+    body = "Hi {0},\n\nThe refusal of chore \"{1}\" was declined. You've been reassigned the chore".format(refused_chore.user, refused_chore.chore)
+    sender = getattr(settings, "EMAIL_HOST_USER", 'colemass')
+    to = [refused_chore.user.email, ]
+    sendemail(title, body, sender, to)
+
+
+
     return redirect('mycolemass')
+
+
 
 @login_required
 def new(request):
@@ -168,7 +189,7 @@ class RecurringChoreListView(ListView):
     queryset = RecurringChore.objects.order_by('-active', 'name')
     context_object_name = 'chores'
     template_name = 'chores/settings.html'
-    
+
     def get_context_data(self, **kwargs):
         context = super(RecurringChoreListView, self).get_context_data(**kwargs)
         context['form'] = RecurringChoreForm()
@@ -185,7 +206,7 @@ class RecurringChoreListView(ListView):
     # fields = ['name']
     # template_name = 'chores/new.html'
     # success_url = reverse_lazy('chores:settings')
-    
+
     # def form_valid(self, form):
         # form.instance.assignee = self.request.user
         # form.instance.active = True
@@ -195,7 +216,7 @@ class RecurringChoreListView(ListView):
     # model = RecurringChore
     # success_url = reverse_lazy('chores:settings')
     # template_name = 'chores/confirm_delete.html'
-    
+
     # def delete(self, request, *args, **kwargs):
         # self.object = self.get_object()
         # if not self.object.completedchore_set.all() and not self.object.refusedchore_set.all():
