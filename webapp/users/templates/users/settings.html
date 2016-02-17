@@ -1,128 +1,262 @@
 {% extends 'base.html' %}
-
+{% block title %} Profile {% endblock %}
+{% block h1 %} Profile of {{ request.user }}  {% endblock %}
 {% block content %}
-    <div class="settings">
-        <h1 class="menupointtitle"> SETTINGS </h1>
-{% if messages %}
-<ul class="messages">
-{% for message in messages %}
-<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-{% endfor %}
-</ul>
-{% endif %}
-        <div class="floatingright">
-            <form action="{% url 'users:deactivate' %}" method="POST">
-                {% csrf_token %}
-                <input type="password" name="pswd" placeholder="Enter password"><br><br>
-                <input type="hidden" name="reason" value="The user has left colemass">
-                <input type="submit" value="DEACTIVATE">
-                {% if msgerror %}
-                    <p>{{ msgerror }}</p><br>
-                {% endif %}
-            </form>
-
-            <h3 class="subpoint">Invite New User</h3>
-            <form action="{% url 'users:newuser' %}" method="POST">
-                {% csrf_token %}
-                <input type="text" name="newuser" placeholder="Enter Email for Invitee">
-                <input type="submit" value="Invite">
-                {% if msgcreuser %}
-                    <p>{{ msgcreuser }}</p><br>
-                {% endif %}
-            </form>
+<!-- Modal for changing password -->
+<div class="modal fade" id="changePassword" tabindex="-1" role="dialog" aria-labelledby="changePasswordLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
+        </button>
+        <h4 class="modal-title" id="changePasswordLabel">Change password</h4>
+      </div>
+      <form class="form-horizontal" action="{% url 'users:change_password' %}" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="old_password" class="col-sm-4 control-label">Old password</label>
+            <div class="col-sm-8">
+              <input type="password" class="form-control" name="old_password" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="new_password1" class="col-sm-4 control-label">New password</label>
+            <div class="col-sm-8">
+              <input type="password" class="form-control" name="new_password1" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="new_password2" class="col-sm-4 control-label">Confirm new password</label>
+            <div class="col-sm-8">
+              <input type="password" class="form-control" name="new_password2" required>
+            </div>
+          </div>
         </div>
-
-    <!--***************************************************************************************************-->
-
-        <div align="left" style="margin-left:45px; width:100%;">
-        {% if request.user.username == 'default' %}
-            <h3 class="subpoint">Change username</h3>
-            <form action="{% url 'users:change_username' %}" method="POST">
-                {% csrf_token %}
-                <input type="text" name="new_username" placeholder="Enter username">
-                <input type="submit" value="Change username">
-            </form>
-        {% endif %}
-            <h3 class="subpoint">Change Password</h3>
-            <form action="{% url 'users:update_password' %}" method="POST">
-                {% csrf_token %}
-                <input type="password" name="oldpswd" placeholder="Enter Old Password">
-                <input type="password" name="newpswd" placeholder="Enter New Password">
-                <input type="submit" value="Update Password">
-            </form>
-            {% if msgpaswd %}
-                <span style="color: #F00; text-align:left;">{{ msgpaswd }}</span>
-            {% endif %}
-
-
-    <!--***************************************************************************************************-->
-
-            <h3 class="subpoint">Change E-Mail address</h3>
-            <form action="{% url 'users:update_email' %}" method="POST">
-                {% csrf_token %}
-                <input type="text" name="newemail" placeholder="Enter New Email">
-                <input type="password" name="pswd" placeholder="Enter Password">
-                <input type="submit" value="Update Email">
-            </form>
-            {% if msgemail %}
-                <span style="color: #F00; text-align:left;">{{ msgemail }}</span>
-            {% endif %}
-
-    <!--***************************************************************************************************-->
-    <script language="javascript">
-    function toggle() {
-        var ele = document.getElementById("toggleText");
-        var text = document.getElementById("displayText");
-        if(ele.style.display == "block") {
-                ele.style.display = "none";
-            text.innerHTML = '<input type="checkbox"  name="vehicle" value="Bike" onclick="javascript:toggle();" {% if is_absent%} checked="checked"{% endif %}>Going Away';
-        }
-        else {
-            ele.style.display = "block";
-            text.innerHTML = '<input type="checkbox"  name="vehicle" value="Bike" onclick="javascript:toggle();" checked="checked">Going Away';
-        }
-    }
-    </script>
-        <h3 class="subpoint">Presence</h3>
-        <span id="displayText"><input type="checkbox" onclick="javascript:toggle();" {% if is_absent%}checked="checked"{% endif %}>Going Away</span>
-        {% if msgpres %}
-            <span style="color: #F00; text-align:left;">{{ msgpres }}</span>
-        {% endif %}
-        <div id="toggleText" style="display: none">
-            <form action="{% if not is_absent %}{% url 'users:set_absent' %}{% else %}{% url 'users:set_present' %}{% endif %}" method="POST">
-                {% csrf_token %}
-                <input type="password" name="pswd" placeholder="Enter Password"><br><br>
-                {%if not is_absent%}
-                    <textarea name="reason" rows="4" cols="30" maxlength="140" placeholder="Enter reason for going away."></textarea><br><br>
-                {% endif %}
-                <input type="submit" value="{% if is_absent %}Present{% else %}Absent{% endif %}">
-            </form>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Change password</button>
         </div>
-
-    <!--***************************************************************************************************-->
-
-        <h3 class="subpoint">Card Broken</h3>
-        <form action="{% url 'users:broken_card' %}" method="POST">
-            {% csrf_token %}
-            <input type="submit" value="Report Card">
-        </form>
-
-    <!--***************************************************************************************************-->
-
-        <h3 class="subpoint">Change Card</h3>
-        <form action="{% url 'users:update_card' %}" method="POST">
-            {% csrf_token %}
-            <select name="card_id">
-                {% for card in cards %}
-                    <option value="{{ card.key }}">{{ card.key }}</option>
-                {% endfor %}
-            </select>
-            <input type="submit" value="Update Card">
-        </form>
-        {% if msgcard %}
-            <span style="color: #F00; text-align:left;">{{ msgcard }}</span>
-        {% endif %}
-        </div>
+      </form>
     </div>
-    <!--***************************************************************************************************-->
+  </div>
+</div>
+
+<!-- Modal for changing email -->
+<div class="modal fade" id="changeEmail" tabindex="-1" role="dialog" aria-labelledby="changeEmailLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
+        </button>
+        <h4 class="modal-title" id="changeEmailLabel">Changing email</h4>
+      </div>
+      <form class="form-horizontal" action="{% url 'users:update_email' %}" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Old email</label>
+            <div class="col-sm-10">
+              <p class="form-control-static">{{ request.user.email }}</p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="new_email" class="col-sm-2 control-label">New email</label>
+            <div class="col-sm-10">
+              <input type="email" class="form-control" name="new_email" placeholder="Email" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="password" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-10">
+              <input type="password" class="form-control" name="password" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Change email</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for invitation -->
+<div class="modal fade" id="inviteUser" tabindex="-1" role="dialog" aria-labelledby="inviteUserLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
+        </button>
+        <h4 class="modal-title" id="inviteUserLabel">Invite a new user</h4>
+      </div>
+      <form action="{% url 'users:newuser' %}" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <label for="reason">Enter the email of the person you'd like to invite.</label>
+          <input type="email" class="form-control" name="newuser" placeholder="Email" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Invite</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for absence -->
+<div class="modal fade" id="setAbsent" tabindex="-1" role="dialog" aria-labelledby="setAbsentLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
+        </button>
+        <h4 class="modal-title" id="setAbsentLabel">Long-term absence</h4>
+      </div>
+      <form action="{% url 'users:set_absent' %}" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <label for="reason">Enter a reason for your absence.</label>
+          <input type="text" class="form-control" name="reason" placeholder="Reason" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for changing card -->
+<div class="modal fade" id="changeCard" tabindex="-1" role="dialog" aria-labelledby="changeCardLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
+        </button>
+        <h4 class="modal-title" id="changeCardLabel">Changing card</h4>
+      </div>
+      <form action="{% url 'users:update_card' %}" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <label for="card_id">Select a card:</label>
+          <select name="card_id" class="form-control">
+            {% for card in cards %}
+              <option value="{{ card.key }}">{{ card.key }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Change card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for reporting a broken card -->
+<div class="modal fade" id="reportBrokenCard" tabindex="-1" role="dialog" aria-labelledby="reportBrokenCardLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
+        </button>
+        <h4 class="modal-title" id="reportBrokenCardLabel">Deleting</h4>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to report your card as broken? This action is <strong>not</strong> reversible.</p>
+      </div>
+      <div class="modal-footer">
+        <form action="{% url 'users:broken_card' %}" method="post">
+          {% csrf_token %}
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Report card</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for deactivation -->
+<div class="modal fade" id="deactivate" tabindex="-1" role="dialog" aria-labelledby="deactivateLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" class="glyphicon glyphicon-remove"></span>
+        </button>
+        <h4 class="modal-title" id="deactivateLabel">Delete account</h4>
+      </div>
+      <form action="{% url 'users:deactivate' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="reason" value="The user has left colemass">
+        <div class="modal-body">
+          <p>Are you sure you want to delete your account? This action is <strong>not</strong> reversible.</p>
+          <label for="pswd">For security's sake, enter your password.</label>
+          <input type="password" class="form-control" name="pswd" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Delete account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="row main">
+  <div class="row">
+    <div class="col-md-12">
+      <strong>Email:</strong> {{ request.user.email }}
+      <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#changeEmail">
+        Change email
+      </button>
+      <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#changePassword">
+        Change password
+      </button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <strong>Card:</strong> {{ request.user.card }}
+      <button type="button" class="btn btn-default btn-sm" data-toggle="modal" data-target="#changeCard">
+        Change card
+      </button>
+      <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#reportBrokenCard">
+        Report broken
+      </button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#setAbsent">
+        Absence
+      </button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#inviteUser">
+        Invite new user
+      </button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deactivate">
+        Delete account
+      </button>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -11,7 +11,7 @@ import datetime
 
 PASSWORD_SET_LENGTH=4
 STEP_CHECK=True
-INVITE_TIMEOUT = 10 #minutes
+INVITE_TIMEOUT = 120 #seconds
 
 class Card(models.Model):
     key = models.CharField(max_length=14, primary_key=True)

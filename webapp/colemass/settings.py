@@ -120,9 +120,9 @@ EMAIL_HOST_PASSWORD = 'colemass2015'
 EMAIL_PORT = 587
 
 # Custom urls for authentication views
-LOGIN_REDIRECT_URL = ''
-LOGIN_URL = '/login/'
-LOGOUT_URL = '/logout/'
+LOGIN_REDIRECT_URL = 'mycolemass'
+LOGIN_URL = 'start'
+LOGOUT_URL = 'logout'
 
 # Custom tags for messages
 MESSAGE_TAGS = {message_constants.ERROR: 'danger'}

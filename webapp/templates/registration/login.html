@@ -11,7 +11,7 @@
         <input type="text" id="id_username" name="username" class="form-control input-top input-lg" placeholder="Username" required autofocus>
         <label for="id_password" class="sr-only">Password</label>
         <input type="password" id="id_password" name="password" class="form-control input-bottom input-lg" placeholder="Password" required>
-        <input type="hidden" name="next" value="/">
+        <input type="hidden" name="next" value="{{ next }}" />
         {% if form.errors %}
           <span class="help-block">The email and password you entered don't match.</span>
         {% endif %}

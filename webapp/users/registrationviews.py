@@ -102,4 +102,4 @@ def registeruser(request):
             carddetails = Card.objects.get(key=request.POST.get('card_id'))
             carddetails.user=nwuser
             carddetails.save()
-        return redirect('/accounts/login/')
+        return redirect('login')

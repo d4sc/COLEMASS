@@ -1,16 +1,17 @@
 {% extends 'base.html' %}
+{% block title %} Remove {{dish.getTitle}} {% endblock %}
+{% block h1 %} Remove {{dish.getTitle}} {% endblock %}
 {% block content %}
 <table width="150px">
   <tr>
     <td>
-      <a style="color:white;" href="{% url 'dishes:dishlist' %}">Dish list</a>
+      <a href="{% url 'dishes:dishlist' %}">Dish list</a>
     </td>
     <td>
-      <a style="color:white;" href="{% url 'dishes:newdish' %}">New dish</a>
+      <a href="{% url 'dishes:newdish' %}">New dish</a>
     </td>
   </tr>
 </table>
-<h1 class="menupointtitle">Remove {{dish.getTitle}}</h1>
 <div class="subpointlist">
   <form action="{% url 'dishes:rmvdish' dish.id %}" method="post">
   <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">

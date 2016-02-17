@@ -109,36 +109,33 @@
 </div>
 
 <div class="row main">
-  <form action="" method="post">
-    {% csrf_token %}
-    {% for chore in chores %}
-      <div class="row div-hover">
-        <div class="col-sm-4">
-          <strong>{{ chore.name }}</strong>
-        </div>
-        <div class="col-sm-1 col-xs-6">
-          {% if chore.active %}Active{% else %}Inactive{% endif %}
-        </div>
-        <div class="col-sm-1 col-xs-3 text-right">
-          <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#editChore"
-            data-chorepk="{{ chore.pk }}" data-chorename="{{ chore.name }}" data-active="{{ chore.active }}">
-            Edit
-          </button>
-        </div>
-        <div class="col-sm-1 col-xs-3 text-right">
-          <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteChore"
-            data-chorepk="{{ chore.pk }}" data-chorename="{{ chore.name }}"
-            {% if chore.completedchore_set.all or chore.refusedchore_set.all%}disabled{% endif %}>
-            Delete
-          </button>
-        </div>
+  {% for chore in chores %}
+    <div class="row div-hover">
+      <div class="col-sm-4">
+        <strong>{{ chore.name }}</strong>
       </div>
-    {% empty %}
-      <div class="row">
-        <div class="col-md-12"><em>There are no recurring chores in the system.</em></div>
+      <div class="col-sm-1 col-xs-6">
+        {% if chore.active %}Active{% else %}Inactive{% endif %}
       </div>
-    {% endfor %}
-  </form>
+      <div class="col-sm-1 col-xs-3 text-right">
+        <button type="button" class="btn btn-default btn-xs" data-toggle="modal" data-target="#editChore"
+          data-chorepk="{{ chore.pk }}" data-chorename="{{ chore.name }}" data-active="{{ chore.active }}">
+          Edit
+        </button>
+      </div>
+      <div class="col-sm-1 col-xs-3 text-right">
+        <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#deleteChore"
+          data-chorepk="{{ chore.pk }}" data-chorename="{{ chore.name }}"
+          {% if chore.completedchore_set.all or chore.refusedchore_set.all%}disabled{% endif %}>
+          Delete
+        </button>
+      </div>
+    </div>
+  {% empty %}
+    <div class="row">
+      <div class="col-md-12"><em>There are no recurring chores in the system.</em></div>
+    </div>
+  {% endfor %}
   <div class="row">
     <div class="col-md-12">
       <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newChore">
@@ -146,36 +143,5 @@
       </button>
     </div>
   </div>
-{% endblock %}
-
-
-{% block content2 %}
-<h2>Recurring chores</h2>
-
-
-<table>
-    <tr>
-        <th>Active</th>
-        <th>Name</th>
-        <th></th>
-    </tr>
-    <form action="{% url 'chores:update' %}" method="post">
-        {% csrf_token %}
-        {% for chore in chores %}
-            <tr>
-                <td style="text-align:center;"></td>
-                <td>{{ chore.name }}</td>
-                <td><a href="{% url 'chores:edit' chore.id %}" class="button">Edit</a></td>
-                <td>
-                    {% if not chore.completedchore_set.all and not chore.refusedchore_set.all%}
-                        <a href="{% url 'chores:delete' chore.id %}" class="button">Delete</a>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="3"><input type="submit" name="submit" value="Save"></td>
-        </tr>
-    </form>
-</table>
+</div>
 {% endblock %}

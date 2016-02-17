@@ -19,12 +19,17 @@ from django.template import RequestContext
 from django.contrib.auth import views as auth_views
 
 from chores.views import mycolemass, stats
+from users.views import setup, start, settings
 
 authentication_urls = [
+    url(r'^start/$', start, name='start'),
+    url(r'^setup/$', setup, name='setup'),
     url(r'^login/$', auth_views.login, name='login'),
     url(r'^logout/$', auth_views.logout_then_login, name='logout'),
-    url(r'^password_reset/$', auth_views.password_reset, {'post_reset_redirect': 'login'}, name='password_reset'),
+    url(r'^password-reset/$', auth_views.password_reset, {'post_reset_redirect': 'login'}, name='password_reset'),
     url(r'^reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$', auth_views.password_reset_confirm, {'post_reset_redirect': 'login'}, name='password_reset_confirm'),
+#    url(r'password_change_done', settings, name='password_change_done')
+#    url('^change-password/', auth_views.password_change, {'template_name': 'change-password.html', 'post_change_redirect': '/users/settings/'})
 ]
 
 urlpatterns = [

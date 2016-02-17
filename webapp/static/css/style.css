@@ -42,12 +42,16 @@ body {
   background: #F8F8F8;
 }
 .container-user {
-  max-width: 215px;
+  max-width: 315px;
   margin: 0 auto;
 }
 
 .row-logo {
   padding-bottom: 15px;
+}
+
+.user-form {
+  margin-bottom: 15px;
 }
 
 .user-form > h2 {
@@ -66,13 +70,13 @@ body {
 }
 
 .user-form .input-bottom {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
 
 .user-form .input-single {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .user-form .form-control {

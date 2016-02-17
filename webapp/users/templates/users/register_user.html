@@ -1,7 +1,7 @@
-{% extends 'base_reg.html' %}
-{% block main %}
+{% extends 'registration/base.html' %}
+{% block content %}
 
-<form action="/registeruser/" method="post" autocomplete="false">
+<form action="{% url 'users:registeruser' %}" method="post" autocomplete="false">
     <input type="hidden" value="{{ csrf_token }}" name="csrfmiddlewaretoken">
     <p class="pawd">Please specify your Username, Name, and password.<br><br>
       <input type="hidden" value="{{ valid_key }}" name="valid_key">

@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.contrib.auth.hashers import check_password
 from django.core.mail import EmailMessage
 from django.contrib import messages
+from django.contrib.auth import views as auth_views
 import random
 import string, sys
 
@@ -49,7 +50,7 @@ def newuser(request):
                     nwuser.save()
                     UserDetail.objects.create(user=nwuser)
                 except:
-                    msgcreuser="Database Connectivity Error:Please try again"
+                    messages.error(request, "Database Connectivity Error:Please try again.")
                 try:
                     userdet=UserDetail.objects.get(user=nwuser)
                     userdet.valid_key=randstring
@@ -57,31 +58,29 @@ def newuser(request):
                     userdet.save()
                 except:
                     nwuser.delete()
-                    msgcreuser="Database Connectivity Error:Please try again"
+                    messages.error(request, "Database Connectivity Error:Please try again.")
                 try:
-                    resetlink='http://'+request.get_host()+'/register/'+request.POST.get('newuser')+'/'+randstring
+                    resetlink='http://'+request.get_host()+'/user/register/'+request.POST.get('newuser')+'/'+randstring
                     message="Hi %s,\n\nYou have been invited to join COLEMASS by %s. Please follow the link to join our network and set your COLEMASS password.\n%s \nRegards,\nColemass Team" % (request.POST.get('newuser'), request.user, resetlink)
-                    email = EmailMessage("COLEMASS:Invite", message,  to=[request.POST.get('newuser')])
+                    email = EmailMessage("[COLEMASS] Invitation", message,  to=[request.POST.get('newuser')])
                     email.send()
                     j='09'
-                    msgcreuser="Invite Sent"
+                    messages.success(request, "Invitation sent.")
                 except:
                     nwuser.delete()
-                    msgcreuser="Error in sending email Please try again later"
+                    messages.error(request, "Error in sending email Please try again later.")
             else:
-                msgcreuser="User has already been invited"
+                messages.error(request, "User has already been invited")
         else:
             if not (validatemail(request.POST.get('newuser'))):
-                msgcreuser="Please provide a valide email ID"
+                messages.error(request, "Please provide a valid email address.")
             elif len(cards)<1:
-                msgcreuser="Sorry colemass has reached its limit\nPlease add new cards to invite people"
+                messages.error(request, "There are not enough cards for a new user.")
             else:
-                raise HttpResponseServerError("Please try agin later")
+                messages.error(request, "Error.")
     except:
-        msgcreuser="Unknown Error: Please try again"
-    cards = Card.objects.filter(user=None).exclude(is_broken=True)
-    is_absent= UserDetail.objects.get(user=request.user).is_absent
-    return render(request, 'users/settings.html',{'cards': cards, 'is_absent':is_absent, 'msgcreuser':msgcreuser, })
+        messages.error(request, "Unknown Error: Please try again")
+    return redirect('users:settings')
 
 
 @login_required
@@ -91,61 +90,21 @@ def cardupdate(request):
     '''
     if request.method=='POST':
         try:
-            carddetails = Card(key=request.POST.get('card_id'))
-            carddetails.user=request.user
-            carddetails.save()
-            msgcard="Card Changed"
-        except:
-            msgcard="Database Connectivity Error: Please Try Again"
-    else:
-        msgcard="Unknow Error: Please Try Again"
-    cards = Card.objects.filter(user=None).exclude(is_broken=True)
-    is_absent= UserDetail.objects.get(user=request.user).is_absent
-    return render(request, 'users/settings.html', {'cards': cards, 'is_absent':is_absent, 'msgcard':msgcard})
-
-@login_required
-def pswdupdate(request):
-    '''
-    Updates user password
-    '''
-    if request.method=='POST':
-        try:
-            msgpaswd=update_password(request.user, request.POST.get('newpswd'), request.POST.get('oldpswd'))
-        except:
-            msgpaswd="Unknown Error:Please try again"
-    else:
-        return redirect('users:settings')
-    if 'Error' in msgpaswd:
-        cards = Card.objects.filter(user=None).exclude(is_broken=True)
-        is_absent= UserDetail.objects.get(user=request.user).is_absent
-        return render(request, 'users/settings.html', {'cards': cards, 'is_absent':is_absent, 'msgpaswd':msgpaswd})
-    else:
-        return redirect('login')
-
-
-@login_required
-def emailupdate(request):
-    '''
-    Updates Email of the user
-    '''
-    if request.method=='POST':
-        try:
-            userdetails = User.objects.get(username=request.user)
-        except:
-            msgemail="Database Connectivity Error: Please Try Again"
-        if(check_password(request.POST.get('pswd'), userdetails.password)):
+            new_card = Card.objects.get(key=request.POST.get('card_id'))
+        except Card.DoesNotExist:
+            new_card = None
+            messages.error(request, "The card you have chosen does not exist.")
+        if new_card:
             try:
-                userdetails.email=request.POST.get('newemail')
-                msgemail="Email Changed Sucessfully"
-                userdetails.save()
-            except:
-                msgemail="Database Connectivity Error: Please Try Again"
-    else:
-        msgemail="Unknown Error: Please Try Again"
-    cards = Card.objects.filter(user=None).exclude(is_broken=True)
-    is_absent= UserDetail.objects.get(user=request.user)
-    is_absent=is_absent.is_absent
-    return render(request, 'users/settings.html', {'cards': cards, 'is_absent':is_absent, 'msgemail':msgemail})
+                old_card = Card.objects.get(user=request.user)
+                old_card.user = None
+                old_card.save()
+            except Card.DoesNotExist:
+                messages.warning(request, "You did not originally have a card.")
+            new_card.user = request.user
+            new_card.save()
+            messages.success(request, "You successfully changed card.")
+    return redirect('users:settings')
 
 @login_required
 def cardbroken(request):
@@ -154,44 +113,62 @@ def cardbroken(request):
     '''
     if request.method=='POST':
         try:
-            if Card.objects.filter(user=request.user).exists():
-                carddetails = Card.objects.get(user=request.user)
-                carddetails.user=None
-                carddetails.is_broken=True
-                msgcard="Card has been reported please choose a new one"
-                carddetails.save()
-            else:
-                msgcard="You currently don't have a card assigned you"
+            broken_card = Card.objects.get(user=request.user)
+            broken_card.user = None
+            broken_card.is_broken = True
+            broken_card.save()
+            messages.warning(request, "Your card has been reported as broken. Don't forget to choose a new one!")
+        except Card.DoesNotExist:
+            messages.error(request, "There is no card assigned to you.")
+    return redirect('users:settings')
 
-        except:
-            msgcard="Database Connectivity Error: Please Try Again"
+@login_required
+def change_password(request):
+    '''
+    Updates user password
+    '''
+    if not check_password(request.POST.get('old_password'), request.user.password):
+        messages.error(request, "Your old password is incorrect.")
+    elif not request.POST.get('new_password1') == request.POST.get('new_password2'):
+        messages.error(request, "The new password fields didn't match")
     else:
-        msgcard="Unknow Error: Please Try Again"
-    cards = Card.objects.filter(user=None).exclude(is_broken=True)
-    is_absent= UserDetail.objects.get(user=request.user).is_absent
-    return render(request, 'users/settings.html', {'cards': cards, 'is_absent':is_absent, 'msgcard':msgcard})
+        request.user.set_password(request.POST.get('new_password1'))
+        request.user.save()
+        messages.success(request, "Your password has been updated.")
+    return redirect('users:settings')
+
+@login_required
+def emailupdate(request):
+    '''
+    Updates Email of the user
+    '''
+    if request.method=='POST':
+        if check_password(request.POST.get('password'), request.user.password):
+            request.user.email = request.POST.get('new_email')
+            request.user.save()
+            messages.success(request, "Your email has been updated.")
+        else:
+            messages.error(request, "You must provide your password to change your email.")
+    return redirect('users:settings')
 
 @login_required
 def set_absent(request):
     '''
-    Sets the user as absent at the same time removing him from all the reccuring chores
+    Sets the user as absent at the same time removing him from all the recurring chores
     '''
-    if(check_password(request.POST.get('pswd'), User.objects.get(username=request.user).password)):
-        user_det=get_object_or_404(UserDetail, user=request.user)
-        user_det.set_absent(request.POST.get('reason'))
-        return redirect('users:settings')
-        msgpres="Database Connectivity Error: Please Try again later"
-        msgpres= str(sys.exc_info())
+    reason = request.POST.get('reason')
+    reason = reason.strip() if reason else ''
+    if reason:
+        user_detail = UserDetail.objects.get(user=request.user)
+        user_detail.set_absent(reason)
     else:
-        msgpres="Please Check the password you have provided"
-    cards = Card.objects.filter(user=None).exclude(is_broken=True)
-    is_absent= UserDetail.objects.get(user=request.user).is_absent
-    return render(request, 'users/settings.html', {'cards': cards, 'is_absent':is_absent, 'msgpres':msgpres})
+        messages.error(request, "You must provide a reason for your absence.")
+    return redirect('users:settings')
 
 @login_required
 def set_present(request):
     '''
-    Sets the user as present at the same time adding him at random in all the reccuring chores
+    Sets the user as present at the same time adding him at random in all the recurring chores
     '''
     if(check_password(request.POST.get('pswd'), User.objects.get(username=request.user).password)):
         try:
@@ -214,17 +191,15 @@ def come_back(request):
 
 @login_required
 def deactivate(request):
-    if(check_password(request.POST.get('pswd'), User.objects.get(username=request.user).password)):
+    if(check_password(request.POST.get('pswd'), request.user.password)):
         user_det=get_object_or_404(UserDetail, user=request.user)
         user_det.deactivate(request.POST.get('reason'))
-        users=get_object_or_404(User, username=request.user)
-        users.is_active=False
-        users.save()
+        request.user.is_active=False
+        request.user.save()
+        if not User.objects.filter(is_active=True).count():
+            for user in User.objects.all():
+                user.delete()
         return redirect('logout')
-
-        msgpres="Database Connectivity Error: Please Try again later"
     else:
-        msgpres="Please Check the password you have provided"
-    cards = Card.objects.filter(user=None).exclude(is_broken=True)
-    is_absent= UserDetail.objects.get(user=request.user).is_absent
-    return render(request, 'users/settings.html', {'cards': cards, 'is_absent':is_absent, 'msgpres':msgpres})
+        messages.error(request, "The password you entered is incorrect.")
+    return redirect('users:settings')

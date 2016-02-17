@@ -1,26 +1,19 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% block title %}Dish list{% endblock %}
+{% block h1 %} Dish list{% endblock %}
 {% block content %}
 <table width="150px">
   <tr>
     <td>
-      <a style="color:white;" href="{% url 'dishes:dishlist' %}">Dish list</a>
+      <a href="{% url 'dishes:dishlist' %}">Dish list</a>
     </td>
     <td>
-      <a style="color:white;" href="{% url 'dishes:newdish' %}">New dish</a>
+      <a href="{% url 'dishes:newdish' %}">New dish</a>
     </td>
   </tr>
 </table>
-<h1 class="menupointtitle">Dish list</h1>
   <div class="subpointlist">
-  {% if messages %}
-  <ul class="messages">
-{% for message in messages %}
-  <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-{% endfor %}
-  </ul>
-{% endif %}
-
     <table class='tab'>
       {% for dish in dishes %}
       <tr>
