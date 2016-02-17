@@ -106,7 +106,7 @@
         <form action="{% url 'chores:approve refusal' %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="pk" value="{{ refused_chore.pk }}">
-          <button type="submit" class="btn btn-success btn-xs" {% if refused_chore.user == request.user %}disabled{% endif %}>Confirm</input>
+          <button type="submit" class="btn btn-success btn-xs" {% if completed_chore.user == request.user %}disabled{% endif %}>Confirm</input>
         </form>
       </div>
       <div class="col-md-1 col-sm-1 col-xs-3 text-right">
