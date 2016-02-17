@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.conf import settings
+from colemass import settings
 from django.utils import timezone
 
 from hardware.models import Hardware
@@ -69,8 +69,8 @@ class ItemTracker(Hardware):
                 return '-11'
         except ObjectDoesNotExist:
             # bad user card id
-            return '-11'        
-        
+            return '-11'
+
         cc = ''
 
         if len(dishes) > 0:
