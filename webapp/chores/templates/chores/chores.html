@@ -12,14 +12,14 @@
         <form action="{% url 'chores:done' %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="pk" value="{{ chore.pk }}">
-          <button type="submit" class="btn btn-success btn-xs">{% if chore.assignee == request.user %}Done{% else %}On me{% endif %}</input>
+          <button type="submit" class="btn btn-success btn-xs" {% if "Automated message" in chore.name %}disabled{% endif %}>{% if chore.assignee == request.user %}Done{% else %}On me{% endif %}</input>
         </form>
       </div>
       <div class="col-md-1 col-sm-1 col-xs-3 text-right">
         <form action="{% url 'chores:nudge' %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="pk" value="{{ chore.pk }}">
-          <button type="submit" class="btn btn-primary btn-xs" {% if chore.assignee == request.user %}disabled{% endif %}>Nudge</input>
+          <button type="submit" class="btn btn-primary btn-xs"  {% if "Automated message" in chore.name or chore.assignee == request.user %}disabled{% endif %}>Nudge</input>
         </form>
       </div>
     </div>

@@ -43,18 +43,18 @@
   <h2 class="sub-header">My Chores</h2>
   {% for chore in chores %}
     <div class="row div-hover">
-      <div class="col-md-4 col-xs-12"><strong>{{ chore.name }}</strong> {{ "Automated message" in chore.name }}</div>
+      <div class="col-md-4 col-xs-12"><strong>{{ chore.name }}</strong></div>
       <div class="col-md-3 col-sm-6 col-xs-12">assigned {{ chore.assigned_time|timesince }} ago</div>
       <div class="col-md-3 col-sm-4 col-xs-6">{{ chore.nudges }} nudge{{ chore.nudges|pluralize }}</div>
       <div class="col-md-1 col-sm-1 col-xs-3 text-right">
         <form action="{% url 'chores:done' %}" method="post">
           {% csrf_token %}
           <input type="hidden" name="pk" value="{{ chore.pk }}">
-          <button type="submit" class="btn btn-success btn-xs">Done</input>
+          <button type="submit" class="btn btn-success btn-xs" {% if "Automated message" in chore.name %}disabled{% endif %}>Done</input>
         </form>
       </div>
       <div class="col-md-1 col-sm-1 col-xs-3 text-right">
-        <button type="button" class="btn btn-danger btn-xs" data-toggle="modal" data-target="#refusing"
+        <button type="button" class="btn btn-danger btn-xs" {% if "Automated message" in chore.name %}disabled{% endif %} data-toggle="modal" data-target="#refusing"
           data-chorepk="{{ chore.pk }}" data-chorename="{{ chore.name }}">
           Refuse
         </button>
