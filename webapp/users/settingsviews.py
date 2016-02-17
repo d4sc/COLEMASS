@@ -9,6 +9,8 @@ from django.contrib.auth.hashers import check_password
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
+from colemass import settings
+
 import random
 import string, sys
 
@@ -61,9 +63,13 @@ def newuser(request):
                     messages.error(request, "Database Connectivity Error:Please try again.")
                 try:
                     resetlink='http://'+request.get_host()+'/user/register/'+request.POST.get('newuser')+'/'+randstring
-                    message="Hi %s,\n\nYou have been invited to join COLEMASS by %s. Please follow the link to join our network and set your COLEMASS password.\n%s \nRegards,\nColemass Team" % (request.POST.get('newuser'), request.user, resetlink)
-                    email = EmailMessage("[COLEMASS] Invitation", message,  to=[request.POST.get('newuser')])
-                    email.send()
+
+                    from dishes.tasks import sendemail
+                    title = "[COLEMASS] Invitation"
+                    body = "Hi {0},\n\nYou have been invited to join COLEMASS by {1}. Please follow the link to join our network and set your COLEMASS password.\n{2} \nRegards,\nColemass Team".format(request.POST.get('newuser'), request.user, resetlink)
+                    sender = getattr(settings, "EMAIL_HOST_USER", 'colemass')
+                    to = [request.POST.get('newuser'), ]
+                    sendemail(title, body, sender, to)
                     j='09'
                     messages.success(request, "Invitation sent.")
                 except:

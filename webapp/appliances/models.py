@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMessage
 from django.utils import timezone
 
+from colemass import settings
 from users.models import Card
 from chores.models import Chore
 from hardware.models import Hardware
@@ -80,11 +81,15 @@ class ApplianceChore(Chore):
                 self.assignee = usr
                 self.reset_nudges()
                 self.save()
-                email = EmailMessage("Appliance chore assignment",
-                   "Hi %s,\n\nYou left the appliance \"%s\" in unsatisfactory condition. Please fix it." % (self.assignee.username, self.appliance.name),
-                   to=[self.assignee.email]
-                   )
-                email.send()
+
+                from dishes.tasks import sendemail
+                title = "[COLEMASS] Appliance chore assignment"
+                body = "Dear {0},\n\nYou left the appliance {1} in an unsatisfactory condition."  \
+                " Please fix it".format(self.assignee.username, self.appliance)
+                sender = getattr(settings, "EMAIL_HOST_USER", 'colemass')
+                to = [self.asignee.email, ]
+                sendemail(title, body, sender, to)
+
                 message = "{0} has been notified to complete the chore \"{1}\".".format(usr.username, self.name)
         else:
             message = super(ApplianceChore, self).report()

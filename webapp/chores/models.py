@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.utils import timezone
 from django.core.urlresolvers import reverse
+from colemass import settings
 
 import datetime, random
 
@@ -87,23 +88,26 @@ class Chore(models.Model):
             if (self.nudges % INFRACTION_THRESHOLD == 0) and not (self.nudges == 0):
                 # every three reports, log an infraction
                 Infraction.objects.create(chore=self, user=self.assignee)
-                email = EmailMessage("Infraction",
-                    "Hi {0},\n\nAn infraction has been logged " \
-                    "for not completing \"{1}\".".format(self.assignee.username, self.name),
-                    to=[self.assignee.email]
-                    )
-                email.send()
+
+                from dishes.tasks import sendemail
+                title = "[COLEMASS] Infraction"
+                body = "Hi {0},\n\n An infraction has been logged " \
+                    "for not completing \"{1}\".".format(self.assignee.username, self.name)
+                sender = getattr(settings, "EMAIL_HOST_USER", 'colemass')
+                to = [self.assignee.email, ]
+                sendemail(title, body, sender, to)
+
                 message = "{0} was nudged for \"{1}\" and an infraction was logged.".format(self.assignee.username, self.name)
             else:
-                email = EmailMessage("Friendly reminder",
-                    "Hi {0},\n\nYou have been nudged {1} time{2} "
-                    "to complete the chore \"{3}\".".format(self.assignee.username,
-                        self.nudges,
-                        ('s','')[self.nudges==1],
-                        self.name),
-                    to=[self.assignee.email]
-                    )
-                email.send()
+
+                from dishes.tasks import sendemail
+                title = "[COLEMASS] Friendly reminder"
+                body = "Hi {0},\n\nYou have been nudged {1} time{2} " \
+                "to complete the chore \"{3}\".".format(self.assignee.username, self.nudges, ('s','')[self.nudges==1], self.name)
+                sender = getattr(settings, "EMAIL_HOST_USER", 'colemass')
+                to = [self.assignee.email, ]
+                sendemail(title, body, sender, to)
+
                 message = "{0} was nudged for \"{1}\".".format(self.assignee.username, self.name)
         return message
 
@@ -112,7 +116,7 @@ class RecurringChore(Chore):
 
     def get_absolute_url(self):
         return reverse('chores:edit', kwargs={'pk': self.pk})
-     
+
     def get_round_robin(self):
         ''' Round robin as list of int '''
         if self.round_robin:
@@ -123,14 +127,14 @@ class RecurringChore(Chore):
     def set_round_robin(self, id_list):
         ''' Updates round robin from list of int '''
         self.round_robin = ','.join([str(i) for i in id_list])
-        
+
     def remove_from_round_robin(self, user):
         pk = user.pk
         order = self.get_round_robin()
         if pk in order:
             order.remove(pk)
         self.set_round_robin(order)
-    
+
     def add_randomly_to_round_robin(self, user):
         pk = user.pk
         order = self.get_round_robin()
@@ -139,7 +143,7 @@ class RecurringChore(Chore):
         else:
             order = [pk]
         self.set_round_robin(order)
-        
+
     def send_to_end(self, user):
         ''' Sends user at the end of round-robin. '''
         order = self.get_round_robin()
@@ -152,11 +156,14 @@ class RecurringChore(Chore):
         ''' Base chore completion + round-robin reassignment. '''
         super(RecurringChore, self).complete(user)
         self.send_to_end(user)
-        email = EmailMessage("Chore assignment",
-            "Hi %s,\n\nThe chore \"%s\" has been assigned to you." % (self.assignee.username, self.name),
-            to=[self.assignee.email]
-            )
-        email.send()
+
+        from dishes.tasks import sendemail
+        title = "[COLEMASS] Chore assignment"
+        body = "Hi {0},\n\nThe chore \"{1}\" has been assigned to you.".format(self.assignee.username, self.name)
+        sender = getattr(settings, "EMAIL_HOST_USER", 'colemass')
+        to = [self.assignee.email, ]
+        sendemail(title, body, sender, to)
+
 
     def refuse(self, reason):
         ''' Base chore refusal + round-robin reassignment. '''
@@ -166,13 +173,13 @@ class RecurringChore(Chore):
         print(self.assignee.username)
         print(self.name)
         print(refusing_user.username)
-        email = EmailMessage("Chore assignment",
-            "Hi {0},\n\nThe chore \"{1}\" has been refused by {2} and it has been assigned to you." +
-            "\nYou can challenge this assignment in your Colemass.".format(self.assignee.username, self.name, refusing_user.username),
-            to=[self.assignee.email]
-            )
-        email.send()
 
+        from dishes.tasks import sendemail
+        title = "[COLEMASS] Chore assignment"
+        body = "Hi {0},\n\nThe chore \"{1}\" has been refused by {2} and it has been assigned to you.\nYou can challenge this assignment in your Colemass.".format(self.assignee.username, self.name, refusing_user.username)
+        sender = getattr(settings, "EMAIL_HOST_USER", 'colemass')
+        to = [self.assignee.email, ]
+        sendemail(title, body, sender, to)
 
 class CompletedChore(models.Model):
     chore = models.ForeignKey(Chore)
@@ -240,7 +247,7 @@ class Infraction(models.Model):
 
     def __str__ (self):
         return self.user.username
-    
+
     def is_recent(self):
         return (timezone.now() - self.date) < datetime.timedelta(days=STATISTICS_PERIOD)
     is_recent.boolean = True
